@@ -79,49 +79,94 @@ h1 {
 .magnitude-box {
     width: 60px;
     height: 60px;
-    display:
-/* --- DUYARLILIK (RESPONSIVE) KURALLARI --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--color-white);
+    border-radius: 50%; /* Dairesel kutu */
+    margin-right: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
 
-/* 1. Genel Kısıtlama (Tablet ve Telefonlar İçin) */
+/* YZ Risk Sınıflandırması */
+
+/* Risk >= 7.0 - Yüksek Risk/Acil Durum */
+.mag-high {
+    background-color: #e74c3c; /* Parlak Kırmızı */
+}
+
+/* Risk 4.0 - 6.9 - Orta Risk */
+.mag-medium {
+    background-color: #e67e22; /* Koyu Turuncu/Kırmızımsı */
+}
+
+/* Risk < 4.0 - Düşük Risk */
+.mag-low {
+    background-color: #2ecc71; /* Yeşil (Güvenlik hissi) */
+    color: var(--color-white);
+}
+
+.details {
+    flex-grow: 1;
+}
+
+.details .location {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 3px;
+}
+
+.details .info {
+    font-size: 0.9em;
+    color: var(--color-light-text);
+}
+
+/* Harita Stili */
+#mapid {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #eee;
+}
+
+/* --- DUYARLILIK (RESPONSIVE) KURALLARI --- */
 @media (max-width: 768px) {
     
     .container {
-        /* Sayfa sınırlarını tamamen kaldırdık */
         max-width: 100%;
         margin: 0;
-        padding: 15px; /* Kenar boşluklarını azalttık */
-        border-radius: 0; /* Köşe yuvarlaklığını kaldırdık */
-        box-shadow: none; /* Gölgeyi kaldırdık */
+        padding: 15px; 
+        border-radius: 0;
+        box-shadow: none;
     }
 
     h1 {
-        font-size: 1.5em; /* Başlığı küçülttük */
+        font-size: 1.5em; 
         text-align: center;
     }
     
-    /* Harita Alanı */
     #mapid {
-        height: 300px !important; /* Harita yüksekliğini azalttık */
+        height: 300px !important; 
         margin-bottom: 15px;
     }
 
-    /* 2. Deprem Kutularının Düzeni */
     .earthquake-item {
-        flex-direction: column; /* Kutuları dikey yığdık */
+        flex-direction: column; 
         align-items: flex-start;
         padding: 15px;
     }
 
-    /* Büyüklük kutusu (Magnitude Box) */
     .magnitude-box {
         width: 45px;
         height: 45px;
         font-size: 1.4em;
-        margin-bottom: 10px; /* Dikey boşluk ekledik */
+        margin-bottom: 10px; 
         margin-right: 0;
     }
 
-    /* Detay Metinleri */
     .details {
         width: 100%;
     }
@@ -132,18 +177,15 @@ h1 {
 
     .details .info {
         font-size: 0.85em;
-        /* Zaman ve Derinlik bilgilerini alt alta göstermek için */
         display: block; 
     }
     
-    /* Yenile Butonu */
     #refreshButton {
-        width: 100%; /* Tüm genişliği kaplamasını sağladık */
+        width: 100%; 
         margin-bottom: 15px;
     }
 }
 
-/* 3. Ekstra Küçük Ekranlar İçin (Telefonlar) */
 @media (max-width: 480px) {
     h1 {
         font-size: 1.3em;
