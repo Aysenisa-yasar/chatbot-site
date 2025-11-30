@@ -27,7 +27,7 @@ function getRiskColor(score) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // YENİ YZ API ADRESİ (RENDER ÜZERİNDEKİ SİZİN SUNUCUNUZ)
-    const apiURL = 'https://chatbot-site-343d.onrender.com/api/risk'; 
+    const apiURL = 'https://chatbot-site-h43d.onrender.com/api/risk'; 
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
@@ -102,7 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen konsolu kontrol edin. (${error.message})</p>`;
+                // Kullanıcıya sunucu uyku modundaysa ne yapması gerektiğini bildir
+                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen sunucunun uyanması için 30 saniye bekleyip tekrar deneyin. (${error.message})</p>`;
             });
     } 
 
