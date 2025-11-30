@@ -27,18 +27,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 earthquakes.forEach(deprem => {
                     
-                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ BAŞLANGIÇ ---
-                    // API'den gelen tarihi ve saati ayırıyoruz (Örn: "2025-11-30 19:45:00")
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ ---
                     const dateString = deprem.date; 
                     const [datePart, timePart] = dateString.split(' ');
-                    
-                    // Tarayıcının Date nesnesine uyumlu ISO formatına dönüştürüyoruz (T harfi ekliyoruz)
                     const isoString = `${datePart}T${timePart}`;
-                    
-                    // Yeni bir Date nesnesi oluşturuyoruz ve Türkçe formatta yerel zamanı alıyoruz
                     const dateTime = new Date(isoString); 
                     const formattedDateTime = dateTime.toLocaleString('tr-TR');
                     // --- ZAMAN BİLGİSİ DÜZENLEMESİ SONU ---
 
 
-                    // Büyüklüğe
+                    // Büyüklüğe göre görsel sınıflandırma
+                    let magnitudeClass = '';
+                    if (deprem.magnitude >= 5.0) {
+                        magnitudeClass = 'mag-high'; // Kırmızı
+                    } else if (deprem.magnitude >= 3.0) {
+                        magnitudeClass = 'mag-medium'; // Turuncu
+                    } else {
+                        magnitudeClass = 'mag-low'; // Yeşil
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'earthquake-item';
+                    
+                    // HTML içeriği oluşturuluyor
+                    item.innerHTML = `
+                        <div class="magnitude-box ${magnitudeClass}">${deprem.magnitude}</div>
+                        <div class="details">
+                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
+                            <p class="info">
+                                Zaman: ${formattedDateTime} | 
+                                Derinlik: ${deprem.depth} km
+                            </p>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                }); 
+            })
+            .catch(error => {
+                console.error('Veri çekme hatası:', error);
+                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
+            });
+    } 
+
+    // Yenile butonuna tıklama olayını ekle
+    refreshButton.addEventListener('click', fetchData);
+
+    // Sayfa ilk yüklendiğinde verileri çek
+    fetchData(); 
+});
