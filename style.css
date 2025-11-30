@@ -80,3 +80,76 @@ h1 {
     width: 60px;
     height: 60px;
     display:
+/* --- DUYARLILIK (RESPONSIVE) KURALLARI --- */
+
+/* 1. Genel Kısıtlama (Tablet ve Telefonlar İçin) */
+@media (max-width: 768px) {
+    
+    .container {
+        /* Sayfa sınırlarını tamamen kaldırdık */
+        max-width: 100%;
+        margin: 0;
+        padding: 15px; /* Kenar boşluklarını azalttık */
+        border-radius: 0; /* Köşe yuvarlaklığını kaldırdık */
+        box-shadow: none; /* Gölgeyi kaldırdık */
+    }
+
+    h1 {
+        font-size: 1.5em; /* Başlığı küçülttük */
+        text-align: center;
+    }
+    
+    /* Harita Alanı */
+    #mapid {
+        height: 300px !important; /* Harita yüksekliğini azalttık */
+        margin-bottom: 15px;
+    }
+
+    /* 2. Deprem Kutularının Düzeni */
+    .earthquake-item {
+        flex-direction: column; /* Kutuları dikey yığdık */
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    /* Büyüklük kutusu (Magnitude Box) */
+    .magnitude-box {
+        width: 45px;
+        height: 45px;
+        font-size: 1.4em;
+        margin-bottom: 10px; /* Dikey boşluk ekledik */
+        margin-right: 0;
+    }
+
+    /* Detay Metinleri */
+    .details {
+        width: 100%;
+    }
+    
+    .details .location {
+        font-size: 1em;
+    }
+
+    .details .info {
+        font-size: 0.85em;
+        /* Zaman ve Derinlik bilgilerini alt alta göstermek için */
+        display: block; 
+    }
+    
+    /* Yenile Butonu */
+    #refreshButton {
+        width: 100%; /* Tüm genişliği kaplamasını sağladık */
+        margin-bottom: 15px;
+    }
+}
+
+/* 3. Ekstra Küçük Ekranlar İçin (Telefonlar) */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3em;
+    }
+    
+    .magnitude-box {
+        font-size: 1.2em;
+    }
+}
