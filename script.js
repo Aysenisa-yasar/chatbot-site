@@ -1,29 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = '// Eski Hatalı Adres: const apiURL = 'https://turkiyedepremapi.herokuapp.com/api';
-
-// YENİ ÇALIŞAN ADRES
-const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';';
+    // YENİ VE ÇALIŞAN API ADRESİ
+    const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
     function fetchData() {
-        listContainer.innerHTML = '<p>Güncel deprem verileri yükleniyor...</p>';
+        listContainer.innerHTML = '<p>Güncel deprem verileri yeni kaynaktan yükleniyor...</p>';
         
         fetch(apiURL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('API bağlantı hatası.');
+                    throw new Error('API bağlantı hatası: Yeni kaynak erişilemiyor.');
                 }
                 return response.json();
             })
             .then(data => {
-                listContainer.innerHTML = ''; // Önceki içeriği temizle
+                listContainer.innerHTML = ''; // Temizle
                 
-                // Sadece son 20 depremi gösterelim
-                const earthquakes = data.slice(0, 20); 
+                // Yeni API'de deprem listesi 'result' anahtarı altında geliyor
+                const earthquakes = data.result ? data.result.slice(0, 20) : []; 
 
                 if (earthquakes.length === 0) {
-                    listContainer.innerHTML = '<p>Son deprem verisi bulunamadı.</p>';
+                    listContainer.innerHTML = '<p>Yeni kaynaktan deprem verisi bulunamadı.</p>';
                     return;
                 }
 
@@ -31,23 +29,28 @@ const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';';
                     const item = document.createElement('div');
                     item.className = 'earthquake-item';
                     
-                    // Deprem büyüklüğüne göre sınıf atayarak basit bir görsel uyarı sistemi kuralım
+                    // Veri isimleri yeni API'ye göre güncellendi: mag -> magnitude, tarih -> date vb.
                     let magnitudeClass = '';
-                    if (deprem.mag >= 5.0) {
-                        magnitudeClass = 'mag-high'; // Kırmızı (Yüksek risk/Uyarı)
-                    } else if (deprem.mag >= 3.0) {
-                        magnitudeClass = 'mag-medium'; // Turuncu (Orta)
+                    if (deprem.magnitude >= 5.0) {
+                        magnitudeClass = 'mag-high';
+                    } else if (deprem.magnitude >= 3.0) {
+                        magnitudeClass = 'mag-medium';
                     } else {
-                        magnitudeClass = 'mag-low'; // Sarı (Düşük)
+                        magnitudeClass = 'mag-low';
                     }
+                    
+                    // Tarih ve saat bilgisini birleştirme
+                    const dateTime = new Date(deprem.date);
+                    const formattedDateTime = dateTime.toLocaleString('tr-TR');
+
 
                     item.innerHTML = `
-                        <div class="magnitude-box ${magnitudeClass}">${deprem.mag}</div>
+                        <div class="magnitude-box ${magnitudeClass}">${deprem.magnitude}</div>
                         <div class="details">
-                            <p class="location">Konum: <strong>${deprem.lokasyon}</strong></p>
+                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
                             <p class="info">
-                                Zaman: ${deprem.date} ${deprem.hour} | 
-                                Derinlik: ${deprem.derinlik} km
+                                Zaman: ${formattedDateTime} | 
+                                Derinlik: ${deprem.depth} km
                             </p>
                         </div>
                     `;
@@ -56,13 +59,10 @@ const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';';
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = '<p>Deprem verileri çekilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>';
+                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
             });
     }
 
-    // Yenile butonuna tıklama olayını ekle
     refreshButton.addEventListener('click', fetchData);
-
-    // Sayfa ilk yüklendiğinde verileri çek
-    fetchData();
+    fetchData(); // Sayfa yüklendiğinde verileri çek
 });
