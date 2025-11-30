@@ -37,15 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetch(apiURL)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('YZ API bağlantı hatası: Sunucuya ulaşılamadı. Kod: ' + response.status);
+                // Sunucu uyku modundan uyanırken 503 veya 404 gibi kodlar gelebilir.
+                // Bu kodları yakalayıp sadece JSON gövdesini işleyelim.
+                if (!response.ok && response.status !== 404 && response.status !== 503 && response.status !== 500) {
+                    throw new Error('YZ API bağlantı hatası: Beklenmeyen Kod ' + response.status);
                 }
+                
+                // Response gövdesini okuyabilmek için, hata kodu 404/500 olsa bile gövdeyi okumayı deneyeceğiz
                 return response.json();
             })
             .then(data => {
                 listContainer.innerHTML = '';
                 
-                if (data.status === 'low_activity' || !data.risk_regions || data.risk_regions.length === 0) {
+                // Render sunucusu çalışmıyorsa veya model hata verdiyse
+                if (!data || data.status === 'low_activity' || !data.risk_regions || data.risk_regions.length === 0) {
                     listContainer.innerHTML = '<p>Şu anda yeterli kümeleme verisi yok veya risk düşüktür. (Deprem sayısı < 10)</p>';
                     return;
                 }
@@ -103,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
                 // Kullanıcıya sunucu uyku modundaysa ne yapması gerektiğini bildir
-                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen sunucunun uyanması için 30 saniye bekleyip tekrar deneyin. (${error.message})</p>`;
+                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen Render sunucusunun uyanması için 30 saniye bekleyip tekrar deneyin. (${error.message})</p>`;
             });
     } 
 
