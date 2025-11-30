@@ -1,20 +1,33 @@
-<!DOCTYPE html>
+<!D<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Türkiye Deprem İzleme Sistemi</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/SVRMgfk/wSgMHkE3S/lQ=="
+       crossorigin=""/>
+       
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Türkiye Güncel Depremleri (Kandilli)</h1>
+        
+        <div id="mapid" style="height: 400px; margin-bottom: 20px; border: 1px solid #ccc;"></div> 
+
         <button id="refreshButton">Depremleri Yenile</button>
         
         <div id="earthquake-list">
             <p>Güncel deprem verileri yükleniyor...</p>
         </div>
     </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+       integrity="sha256-20n6a9c8b6S5bF4e1d7g2oYv1sQyP0G5tS6B2fGvW8P/g=="
+       crossorigin=""></script>
+       
     <script src="script.js"></script>
 </body>
 </html>
