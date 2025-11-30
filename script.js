@@ -1,5 +1,5 @@
 // script.js dosyasının BAŞLANGICI:
-let mymap = null; // Harita değişkeni tanımla (Genel erişim için en üste)
+let mymap = null; // Harita değişkeni tanımla
 
 function initializeMap() {
     // Harita zaten kurulduysa eski haritayı sil (Yenileme için)
@@ -38,15 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(apiURL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('YZ API bağlantı hatası: Sunucuya ulaşılamadı.');
+                    throw new Error('YZ API bağlantı hatası: Sunucuya ulaşılamadı. Kod: ' + response.status);
                 }
                 return response.json();
             })
             .then(data => {
                 listContainer.innerHTML = '';
                 
-                if (data.status === 'low_activity' || data.risk_regions.length === 0) {
-                    listContainer.innerHTML = '<p>Şu anda yeterli kümeleme verisi yok veya risk düşüktür.</p>';
+                if (data.status === 'low_activity' || !data.risk_regions || data.risk_regions.length === 0) {
+                    listContainer.innerHTML = '<p>Şu anda yeterli kümeleme verisi yok veya risk düşüktür. (Deprem sayısı < 10)</p>';
                     return;
                 }
 
@@ -64,12 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         radius: score * 1.5, // Risk puanına göre daire boyutu değişsin
                         color: color,
                         fillColor: color,
-                        fillOpacity: 0.6
+                        fillOpacity: 0.6,
+                        weight: 2
                     }).addTo(mymap);
                     
                     // Açılır Pencere içeriği
                     const popupContent = `
-                        <b>YZ Risk Merkezi ${riskRegion.id + 1}</b><br>
+                        <b>YZ Risk Merkezi #${riskRegion.id + 1}</b><br>
                         Risk Puanı: <b>${score.toFixed(1)} / 10</b><br>
                         Yoğunluk: ${density} deprem
                     `;
@@ -84,10 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.innerHTML = `
                         <div class="magnitude-box ${magnitudeClass}">${score.toFixed(1)}</div>
                         <div class="details">
-                            <p class="location">Risk Merkezi ${riskRegion.id + 1}: YZ Analizi</p>
+                            <p class="location">Risk Merkezi #${riskRegion.id + 1}: YZ Analizi</p>
                             <p class="info">
                                 Risk Puanı: ${score.toFixed(1)} / 10 | 
-                                Yoğunluk (Son Kayıt): ${density} deprem
+                                Yoğunluk: ${density} son deprem
                             </p>
                         </div>
                     `;
@@ -101,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. ${error.message}</p>`;
+                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen konsolu kontrol edin. (${error.message})</p>`;
             });
     } 
 
