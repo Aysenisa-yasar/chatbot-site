@@ -27,10 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 earthquakes.forEach(deprem => {
                     
+                    // --- GÜVENLİK KONTROLÜ: Tarih alanı eksikse kaydı atla (Hata Çözümü) ---
+                    if (!deprem.date || !deprem.title || !deprem.depth) {
+                        console.warn('Bir deprem kaydı eksik veri içeriyor, atlanıyor.', deprem);
+                        return; // Eksik verili kaydı atla
+                    }
+                    
                     // --- ZAMAN BİLGİSİ DÜZENLEMESİ ---
                     const dateString = deprem.date; 
+                    // Tarihi ve saati ayırıyoruz
                     const [datePart, timePart] = dateString.split(' ');
-                    const isoString = `${datePart}T${timePart}`;
+                    
+                    // Tarayıcı uyumluluğu için ISO formatına dönüştürüyoruz (T ekliyoruz)
+                    // timePart yoksa (nadiren), '00:00:00' varsayımı eklenmiştir.
+                    const isoString = `${datePart}T${timePart || '00:00:00'}`; 
                     const dateTime = new Date(isoString); 
                     const formattedDateTime = dateTime.toLocaleString('tr-TR');
                     // --- ZAMAN BİLGİSİ DÜZENLEMESİ SONU ---
@@ -53,25 +63,3 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.innerHTML = `
                         <div class="magnitude-box ${magnitudeClass}">${deprem.magnitude}</div>
                         <div class="details">
-                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
-                            <p class="info">
-                                Zaman: ${formattedDateTime} | 
-                                Derinlik: ${deprem.depth} km
-                            </p>
-                        </div>
-                    `;
-                    listContainer.appendChild(item);
-                }); 
-            })
-            .catch(error => {
-                console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
-            });
-    } 
-
-    // Yenile butonuna tıklama olayını ekle
-    refreshButton.addEventListener('click', fetchData);
-
-    // Sayfa ilk yüklendiğinde verileri çek
-    fetchData(); 
-});
