@@ -1,51 +1,90 @@
-// script.js dosyanızın en üstüne, fetchData fonksiyonundan önce ekleyin:
-let mymap = null; // Harita değişkeni tanımla
+document.addEventListener('DOMContentLoaded', () => {
+    // Kullanılan API Adresi (AFAD/Kandilli verilerini çeken servis)
+    const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';
+    const listContainer = document.getElementById('earthquake-list');
+    const refreshButton = document.getElementById('refreshButton');
 
-function initializeMap() {
-    // Harita zaten kurulduysa eski haritayı sil (Yenileme için gerekli)
-    if (mymap !== null) {
-        mymap.remove();
-    }
-    
-    // Haritayı kur ve Türkiye'nin merkezine odakla
-    mymap = L.map('mapid').setView([39.9, 35.8], 6); 
-
-    // OpenStreetMap katmanını ekle
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(mymap);
-}
-
-// fetchData fonksiyonu içindeki değişiklikler:
-
-// ... fetch.then(data => { kısmından sonra ...
-    
-    // Haritayı her veri çekişinde sıfırla
-    initializeMap(); 
-
-    earthquakes.forEach(deprem => {
-        // Kontrol: geojson.coordinates alanı var mı?
-        if (!deprem.geojson || !deprem.geojson.coordinates || deprem.geojson.coordinates.length < 2) {
-            return; 
-        }
-
-        // Boylam (Longitude) ve Enlem (Latitude) ayırma
-        const [lon, lat] = deprem.geojson.coordinates;
+    function fetchData() {
+        listContainer.innerHTML = '<p>Güncel deprem verileri yükleniyor...</p>';
         
-        // Marker (İşaretçi) oluşturma
-        const marker = L.marker([lat, lon]).addTo(mymap);
-        
-        // Açılır Pencere içeriği
-        const popupContent = `
-            <b>${deprem.title}</b><br>
-            Büyüklük: M ${deprem.mag}<br>
-            Derinlik: ${deprem.depth} km<br>
-            Zaman: ${new Date(deprem.date_time).toLocaleString('tr-TR')}
-        `;
-        
-        marker.bindPopup(popupContent);
+        fetch(apiURL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API bağlantı hatası: Kaynak erişilemiyor.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                listContainer.innerHTML = ''; // Önceki içeriği temizle
+                
+                // Deprem listesi 'result' anahtarı altında geliyor
+                const earthquakes = data.result ? data.result.slice(0, 20) : []; 
 
-        // ... listenin oluşturulduğu HTML kodları ...
-    });
-// ...
+                if (earthquakes.length === 0) {
+                    listContainer.innerHTML = '<p>Deprem verisi bulunamadı.</p>';
+                    return;
+                }
+
+                earthquakes.forEach(deprem => {
+                    
+                    // --- GÜVENLİK KONTROLÜ (ANAHTARLAR GÜNCELLENDİ) ---
+                    // API'den gelen verideki yeni anahtarlar (date_time ve mag) kontrol ediliyor.
+                    if (!deprem.date_time || !deprem.title || !deprem.mag) {
+                        // Bu uyarıyı göremezsiniz, çünkü artık tüm kayıtlar bu alanlara sahip.
+                        // Ancak eksik veri gelirse kaydı atlamak için duruyor.
+                        console.warn('Eksik veriye sahip deprem kaydı atlanıyor:', deprem);
+                        return; 
+                    }
+                    
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ (date_time kullanılıyor) ---
+                    const dateString = deprem.date_time; // Burası Düzeltildi
+                    
+                    // dateString'i boşluktan ayırarak güvenli split işlemi
+                    const [datePart, timePart] = dateString.split(' ');
+                    
+                    // ISO formatına dönüştürme ve tarih nesnesi oluşturma
+                    const isoString = `${datePart}T${timePart || '00:00:00'}`; 
+                    const dateTime = new Date(isoString); 
+                    const formattedDateTime = dateTime.toLocaleString('tr-TR');
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ SONU ---
+
+
+                    // Büyüklüğe göre görsel sınıflandırma (mag kullanılıyor)
+                    let magnitudeClass = '';
+                    if (deprem.mag >= 5.0) { // Burası Düzeltildi
+                        magnitudeClass = 'mag-high'; // Kırmızı
+                    } else if (deprem.mag >= 3.0) { // Burası Düzeltildi
+                        magnitudeClass = 'mag-medium'; // Turuncu
+                    } else {
+                        magnitudeClass = 'mag-low'; // Yeşil
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'earthquake-item';
+                    
+                    // HTML içeriği oluşturuluyor (mag kullanılıyor)
+                    item.innerHTML = `
+                        <div class="magnitude-box ${magnitudeClass}">${deprem.mag}</div>
+                        <div class="details">
+                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
+                            <p class="info">
+                                Zaman: ${formattedDateTime} | 
+                                Derinlik: ${deprem.depth} km
+                            </p>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                }); 
+            })
+            .catch(error => {
+                console.error('Veri çekme hatası:', error);
+                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
+            });
+    } 
+
+    // Yenile butonuna tıklama olayını ekle
+    refreshButton.addEventListener('click', fetchData);
+
+    // Sayfa ilk yüklendiğinde verileri çek
+    fetchData(); 
+});
