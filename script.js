@@ -1,6 +1,5 @@
-// script.js dosyanızın BAŞLANGICI:
-
-let mymap = null; // Harita değişkeni tanımla
+// script.js dosyasının BAŞLANGICI:
+let mymap = null; // Harita değişkeni tanımla (Genel erişim için en üste)
 
 function initializeMap() {
     // Harita zaten kurulduysa eski haritayı sil (Yenileme için)
@@ -19,108 +18,93 @@ function initializeMap() {
     }).addTo(mymap);
 }
 
+// Risk puanına göre marker rengi belirleme fonksiyonu
+function getRiskColor(score) {
+    if (score >= 7.0) return 'red'; // Yüksek Risk
+    if (score >= 4.0) return 'orange'; // Orta Risk
+    return 'green'; // Düşük Risk
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';
+    // YENİ YZ API ADRESİ (RENDER ÜZERİNDEKİ SİZİN SUNUCUNUZ)
+    const apiURL = 'https://chatbot-site-343d.onrender.com/api/risk'; 
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
     function fetchData() {
-        listContainer.innerHTML = '<p>Güncel deprem verileri yükleniyor...</p>';
-        
-        // Haritayı her yeni veri çekişinde sıfırla
+        listContainer.innerHTML = '<p>YZ risk analizi verileri yükleniyor...</p>';
         initializeMap(); 
 
         fetch(apiURL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('API bağlantı hatası: Kaynak erişilemiyor.');
+                    throw new Error('YZ API bağlantı hatası: Sunucuya ulaşılamadı.');
                 }
                 return response.json();
             })
             .then(data => {
-                listContainer.innerHTML = ''; 
-                const earthquakes = data.result ? data.result.slice(0, 20) : []; 
-
-                if (earthquakes.length === 0) {
-                    listContainer.innerHTML = '<p>Deprem verisi bulunamadı.</p>';
+                listContainer.innerHTML = '';
+                
+                if (data.status === 'low_activity' || data.risk_regions.length === 0) {
+                    listContainer.innerHTML = '<p>Şu anda yeterli kümeleme verisi yok veya risk düşüktür.</p>';
                     return;
                 }
 
-                let bounds = []; // Harita sınırlarını otomatik ayarlamak için
+                let bounds = []; 
 
-                earthquakes.forEach(deprem => {
+                data.risk_regions.forEach(riskRegion => {
                     
-                    // --- GÜVENLİK VE ANAHTAR KONTROLÜ ---
-                    if (!deprem.date_time || !deprem.title || !deprem.mag || !deprem.geojson || !deprem.geojson.coordinates) {
-                        console.warn('Eksik coğrafi veya zaman verisine sahip deprem kaydı atlanıyor:', deprem);
-                        return; 
-                    }
-                    
-                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ ---
-                    const dateString = deprem.date_time; 
-                    const [datePart, timePart] = dateString.split(' ');
-                    const isoString = `${datePart}T${timePart || '00:00:00'}`; 
-                    const dateTime = new Date(isoString); 
-                    const formattedDateTime = dateTime.toLocaleString('tr-TR');
-                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ SONU ---
-
-                    // --- HARİTA İŞLEMLERİ ---
-                    const [lon, lat] = deprem.geojson.coordinates;
+                    const { lat, lon, score, density } = riskRegion;
                     bounds.push([lat, lon]);
-
-                    // Marker (İşaretçi) oluşturma ve haritaya ekleme
-                    const marker = L.marker([lat, lon]).addTo(mymap);
+                    
+                    const color = getRiskColor(score);
+                    
+                    // --- HARİTA İŞLEMLERİ (RİSK MERKEZLERİNİ GÖSTERME) ---
+                    const marker = L.circleMarker([lat, lon], {
+                        radius: score * 1.5, // Risk puanına göre daire boyutu değişsin
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.6
+                    }).addTo(mymap);
                     
                     // Açılır Pencere içeriği
                     const popupContent = `
-                        <b>${deprem.title}</b><br>
-                        Büyüklük: M ${deprem.mag}<br>
-                        Derinlik: ${deprem.depth} km<br>
-                        Zaman: ${formattedDateTime}
+                        <b>YZ Risk Merkezi ${riskRegion.id + 1}</b><br>
+                        Risk Puanı: <b>${score.toFixed(1)} / 10</b><br>
+                        Yoğunluk: ${density} deprem
                     `;
-                    marker.bindPopup(popupContent);
+                    marker.bindPopup(popupContent).openPopup();
                     // --- HARİTA İŞLEMLERİ SONU ---
 
                     // --- LİSTE OLUŞTURMA ---
-                    let magnitudeClass = '';
-                    if (deprem.mag >= 5.0) {
-                        magnitudeClass = 'mag-high';
-                    } else if (deprem.mag >= 3.0) {
-                        magnitudeClass = 'mag-medium';
-                    } else {
-                        magnitudeClass = 'mag-low';
-                    }
-
                     const item = document.createElement('div');
                     item.className = 'earthquake-item';
-                    
+                    let magnitudeClass = (score >= 7.0) ? 'mag-high' : (score >= 4.0 ? 'mag-medium' : 'mag-low');
+
                     item.innerHTML = `
-                        <div class="magnitude-box ${magnitudeClass}">${deprem.mag}</div>
+                        <div class="magnitude-box ${magnitudeClass}">${score.toFixed(1)}</div>
                         <div class="details">
-                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
+                            <p class="location">Risk Merkezi ${riskRegion.id + 1}: YZ Analizi</p>
                             <p class="info">
-                                Zaman: ${formattedDateTime} | 
-                                Derinlik: ${deprem.depth} km
+                                Risk Puanı: ${score.toFixed(1)} / 10 | 
+                                Yoğunluk (Son Kayıt): ${density} deprem
                             </p>
                         </div>
                     `;
                     listContainer.appendChild(item);
                 });
                 
-                // Harita sınırlarını, tüm markerları içerecek şekilde ayarla
+                // Harita sınırlarını ayarla
                 if (bounds.length > 0) {
                     mymap.fitBounds(bounds, { padding: [50, 50] });
                 }
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
+                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. ${error.message}</p>`;
             });
     } 
 
     refreshButton.addEventListener('click', fetchData);
-    
-    // Sayfa yüklendiğinde hem haritayı başlat hem de verileri çek
     fetchData(); 
 });
-// script.js dosyasının SONU.
