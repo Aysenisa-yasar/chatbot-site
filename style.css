@@ -1,25 +1,67 @@
+/* Genel Stil */
 body {
-    background: #f0f0f0;
-    font-family: Arial, sans-serif;
+    font-family: sans-serif;
+    background-color: #f4f4f9;
 }
 
 .container {
-    margin: 100px auto;
-    width: 90%;
-    max-width: 600px;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
     background: white;
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-button {
-    padding: 10px 20px;
-    border: none;
-    background: black;
+/* Deprem Kutusu Stili */
+.earthquake-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.earthquake-item:last-child {
+    border-bottom: none;
+}
+
+/* Büyüklük (Magnitude) Kutusu */
+.magnitude-box {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
     color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 20px;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+
+/* Yapay Zeka Desteği/Uyarı Sistemi (CSS ile Basit Sınıflandırma) */
+
+/* M >= 5.0 - Yüksek Risk/Acil Durum */
+.mag-high {
+    background-color: #e74c3c; /* Kırmızı */
+}
+
+/* M 3.0 - 4.9 - Orta Risk */
+.mag-medium {
+    background-color: #f39c12; /* Turuncu */
+}
+
+/* M < 3.0 - Düşük Risk */
+.mag-low {
+    background-color: #2ecc71; /* Yeşil */
+    color: #333;
+}
+
+.details .location {
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.details .info {
+    font-size: 0.8em;
+    color: #777;
 }
