@@ -27,19 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 earthquakes.forEach(deprem => {
                     
-                    // --- GÜVENLİK KONTROLÜ: Tarih alanı eksikse kaydı atla (Hata Çözümü) ---
-                    if (!deprem.date || !deprem.title || !deprem.depth) {
-                        console.warn('Bir deprem kaydı eksik veri içeriyor, atlanıyor.', deprem);
-                        return; // Eksik verili kaydı atla
+                    // --- GÜVENLİK KONTROLÜ İYİLEŞTİRİLDİ (Hata Çözümü) ---
+                    // Eğer kritik alanlar (date, title, magnitude) eksikse bu kaydı atla.
+                    if (!deprem.date || !deprem.title || !deprem.magnitude) {
+                        console.warn('Eksik veriye sahip deprem kaydı atlanıyor:', deprem);
+                        return; 
                     }
                     
-                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ ---
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ (Güvenli Ayrıştırma) ---
                     const dateString = deprem.date; 
-                    // Tarihi ve saati ayırıyoruz
+                    
+                    // dateString'in var olduğunu kontrol ederek güvenli split işlemi
                     const [datePart, timePart] = dateString.split(' ');
                     
-                    // Tarayıcı uyumluluğu için ISO formatına dönüştürüyoruz (T ekliyoruz)
-                    // timePart yoksa (nadiren), '00:00:00' varsayımı eklenmiştir.
+                    // ISO formatına dönüştürme ve tarih nesnesi oluşturma
                     const isoString = `${datePart}T${timePart || '00:00:00'}`; 
                     const dateTime = new Date(isoString); 
                     const formattedDateTime = dateTime.toLocaleString('tr-TR');
@@ -63,3 +64,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.innerHTML = `
                         <div class="magnitude-box ${magnitudeClass}">${deprem.magnitude}</div>
                         <div class="details">
+                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
+                            <p class="info">
+                                Zaman: ${formattedDateTime} | 
+                                Derinlik: ${deprem.depth} km
+                            </p>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                }); 
+            })
+            .catch(error => {
+                console.error('Veri çekme hatası:', error);
+                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
+            });
+    } 
+
+    // Yenile butonuna tıklama olayını ekle
+    refreshButton.addEventListener('click', fetchData);
+
+    // Sayfa ilk yüklendiğinde verileri çek
+    fetchData(); 
+});
