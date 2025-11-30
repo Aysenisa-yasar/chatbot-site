@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = 'https://turkiyedepremapi.herokuapp.com/api';
+    const apiURL = '// Eski Hatalı Adres: const apiURL = 'https://turkiyedepremapi.herokuapp.com/api';
+
+// YENİ ÇALIŞAN ADRES
+const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';';
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
