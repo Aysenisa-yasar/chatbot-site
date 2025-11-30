@@ -1,68 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // YENİ VE ÇALIŞAN API ADRESİ
+    // Kullanılan API Adresi (AFAD/Kandilli verilerini çeken servis)
     const apiURL = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live';
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
     function fetchData() {
-        listContainer.innerHTML = '<p>Güncel deprem verileri yeni kaynaktan yükleniyor...</p>';
+        listContainer.innerHTML = '<p>Güncel deprem verileri yükleniyor...</p>';
         
         fetch(apiURL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('API bağlantı hatası: Yeni kaynak erişilemiyor.');
+                    throw new Error('API bağlantı hatası: Kaynak erişilemiyor.');
                 }
                 return response.json();
             })
             .then(data => {
-                listContainer.innerHTML = ''; // Temizle
+                listContainer.innerHTML = ''; // Önceki içeriği temizle
                 
                 // Yeni API'de deprem listesi 'result' anahtarı altında geliyor
                 const earthquakes = data.result ? data.result.slice(0, 20) : []; 
 
                 if (earthquakes.length === 0) {
-                    listContainer.innerHTML = '<p>Yeni kaynaktan deprem verisi bulunamadı.</p>';
+                    listContainer.innerHTML = '<p>Deprem verisi bulunamadı.</p>';
                     return;
                 }
 
                 earthquakes.forEach(deprem => {
-                    const item = document.createElement('div');
-                    item.className = 'earthquake-item';
                     
-                    // Veri isimleri yeni API'ye göre güncellendi: mag -> magnitude, tarih -> date vb.
-                    let magnitudeClass = '';
-                    if (deprem.magnitude >= 5.0) {
-                        magnitudeClass = 'mag-high';
-                    } else if (deprem.magnitude >= 3.0) {
-                        magnitudeClass = 'mag-medium';
-                    } else {
-                        magnitudeClass = 'mag-low';
-                    }
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ BAŞLANGIÇ ---
+                    // API'den gelen tarihi ve saati ayırıyoruz (Örn: "2025-11-30 19:45:00")
+                    const dateString = deprem.date; 
+                    const [datePart, timePart] = dateString.split(' ');
                     
-                    // Tarih ve saat bilgisini birleştirme
-                    const dateTime = new Date(deprem.date);
+                    // Tarayıcının Date nesnesine uyumlu ISO formatına dönüştürüyoruz (T harfi ekliyoruz)
+                    const isoString = `${datePart}T${timePart}`;
+                    
+                    // Yeni bir Date nesnesi oluşturuyoruz ve Türkçe formatta yerel zamanı alıyoruz
+                    const dateTime = new Date(isoString); 
                     const formattedDateTime = dateTime.toLocaleString('tr-TR');
+                    // --- ZAMAN BİLGİSİ DÜZENLEMESİ SONU ---
 
 
-                    item.innerHTML = `
-                        <div class="magnitude-box ${magnitudeClass}">${deprem.magnitude}</div>
-                        <div class="details">
-                            <p class="location">Konum: <strong>${deprem.title}</strong></p>
-                            <p class="info">
-                                Zaman: ${formattedDateTime} | 
-                                Derinlik: ${deprem.depth} km
-                            </p>
-                        </div>
-                    `;
-                    listContainer.appendChild(item);
-                });
-            })
-            .catch(error => {
-                console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = '<p>Deprem verileri çekilirken ciddi bir hata oluştu. Lütfen konsolu kontrol edin.</p>';
-            });
-    }
-
-    refreshButton.addEventListener('click', fetchData);
-    fetchData(); // Sayfa yüklendiğinde verileri çek
-});
+                    // Büyüklüğe
