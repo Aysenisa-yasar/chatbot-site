@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Bağlantı Sayfası</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Türkiye Deprem İzleme Sistemi</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Merhaba!</h1>
-        <p>Bu sayfa chatbot bağlantısı için oluşturuldu.</p>
-
-        <button id="fetchData">Dinamik Veri Çek</button>
-        <div id="result"></div>
+        <h1>Türkiye Güncel Depremleri (Kandilli)</h1>
+        <button id="refreshButton">Depremleri Yenile</button>
+        
+        <div id="earthquake-list">
+            <p>Güncel deprem verileri yükleniyor...</p>
+        </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
