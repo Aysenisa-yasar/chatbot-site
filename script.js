@@ -22,7 +22,10 @@ function getRiskColor(score) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = 'https://chatbot-site-h43d.onrender.com/api/risk'; 
+    // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİNİ TANIMLAYIN!
+    const RENDER_API_BASE_URL = 'https://chatbot-site-h43d.onrender.com';
+    const apiURL = `${RENDER_API_BASE_URL}/api/risk`; // Risk analizi için mutlak URL
+    
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
     
@@ -98,11 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen Render sunucusunun uyanması için 30 saniye bekleyip tekrar deneyin. (${error.message})</p>`;
+                listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Render sunucunuzun aktif olduğunu kontrol edin. (${error.message})</p>`;
             });
     } 
 
-    // 1. Konum Alma Fonksiyonu
+    // Konum Alma Fonksiyonu
     getLocationButton.addEventListener('click', () => {
         if (!navigator.geolocation) {
             locationStatus.textContent = 'Hata: Tarayıcınız konum servisini desteklemiyor.';
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 2. Ayarları Kaydetme (Backend'e POST) Fonksiyonu
+    // Ayarları Kaydetme (Backend'e POST) Fonksiyonu
     saveSettingsButton.addEventListener('click', () => {
         const number = numberInput.value; 
         
@@ -136,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        fetch('/api/set-alert', {
+        // KRİTİK DÜZELTME: Mutlak URL ile POST isteği gönderiliyor.
+        fetch(`${RENDER_API_BASE_URL}/api/set-alert`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -147,7 +151,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 number: number 
             }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) { 
+                 throw new Error(`Sunucu Hatası: ${response.status}. Render loglarını kontrol edin.`);
+            }
+            return response.json();
+        })
         .then(result => {
             if (result.status === 'success') {
                 alert('✅ Bildirim ayarlarınız başarıyla kaydedildi! WhatsApp üzerinden uyarı alacaksınız.');
@@ -157,7 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => {
-            alert('Ağ Hatası: Sunucuya bağlanılamadı. Bildirim ayarları kaydedilemedi.');
+            console.error('Ağ/Sunucu Hatası:', error);
+            alert('Bağlantı Hatası: Render sunucunuzun API uç noktasını kontrol edin. (' + error.message + ')');
         });
     });
 
