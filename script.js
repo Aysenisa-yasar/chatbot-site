@@ -31,6 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
 
+    // --- YENİ EKLENEN ELEMAN REFERANSLARI ---
+    const getLocationButton = document.getElementById('getLocationButton');
+    const saveSettingsButton = document.getElementById('saveSettingsButton');
+    const locationStatus = document.getElementById('locationStatus');
+    const numberInput = document.getElementById('numberInput'); // WhatsApp Numarası girişi
+
+    let userCoords = null; // Kullanıcının enlem/boylam bilgisini saklar
+
     function fetchData() {
         listContainer.innerHTML = '<p>YZ risk analizi verileri yükleniyor...</p>';
         initializeMap(); 
@@ -38,12 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(apiURL)
             .then(response => {
                 // Sunucu uyku modundan uyanırken 503 veya 404 gibi kodlar gelebilir.
-                // Bu kodları yakalayıp sadece JSON gövdesini işleyelim.
                 if (!response.ok && response.status !== 404 && response.status !== 503 && response.status !== 500) {
                     throw new Error('YZ API bağlantı hatası: Beklenmeyen Kod ' + response.status);
                 }
                 
-                // Response gövdesini okuyabilmek için, hata kodu 404/500 olsa bile gövdeyi okumayı deneyeceğiz
                 return response.json();
             })
             .then(data => {
@@ -107,10 +113,76 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Veri çekme hatası:', error);
-                // Kullanıcıya sunucu uyku modundaysa ne yapması gerektiğini bildir
                 listContainer.innerHTML = `<p>Hata: YZ sunucusuna bağlanılamadı. Lütfen Render sunucusunun uyanması için 30 saniye bekleyip tekrar deneyin. (${error.message})</p>`;
             });
     } 
+
+    // --- YENİ EKLENEN KOD BAŞLANGICI: KONUM VE BİLDİRİM MANTIKLARI ---
+    
+    // 1. Konum Alma Fonksiyonu
+    getLocationButton.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            locationStatus.textContent = 'Hata: Tarayıcınız konum servisini desteklemiyor.';
+            return;
+        }
+
+        locationStatus.textContent = 'Konumunuz tespit ediliyor...';
+
+        navigator.geolocation.getCurrentPosition(position => {
+            userCoords = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            };
+            // Kullanıcıya tespit edilen konumu bildir
+            locationStatus.innerHTML = `✅ Konum Tespit Edildi!<br>Enlem: ${userCoords.lat.toFixed(4)}, Boylam: ${userCoords.lon.toFixed(4)}`;
+        }, error => {
+            // Hata kontrolü: Konum izni verilmediğinde veya hata oluştuğunda
+            locationStatus.textContent = `Hata: Konum izni verilmedi veya hata oluştu. (${error.message})`;
+            userCoords = null;
+        });
+    });
+
+    // 2. Ayarları Kaydetme (Backend'e POST) Fonksiyonu
+    saveSettingsButton.addEventListener('click', () => {
+        const number = numberInput.value; // WhatsApp Numarası
+        
+        if (!userCoords) {
+            alert('Lütfen önce "Konumumu Otomatik Belirle" butonuna basarak konumunuzu tespit edin.');
+            return;
+        }
+        // Numaranın temel format kontrolü
+        if (!number || !number.startsWith('+')) { 
+            alert('Lütfen geçerli bir telefon numarası (ülke kodu ile, Örn: +905xxxxxxxx) girin.');
+            return;
+        }
+        
+        // Konum ve numara bilgisini Backend'e gönderme
+        fetch('/api/set-alert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lat: userCoords.lat,
+                lon: userCoords.lon,
+                number: number 
+            }),
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'success') {
+                alert('✅ Bildirim ayarlarınız başarıyla kaydedildi! WhatsApp üzerinden uyarı alacaksınız.');
+                locationStatus.innerHTML += `<br>🔔 Bildirimler **${number}** numarasına aktif edildi.`;
+            } else {
+                alert('Hata: Ayarlar kaydedilirken sunucuda bir sorun oluştu. ' + result.message);
+            }
+        })
+        .catch(error => {
+            alert('Ağ Hatası: Sunucuya bağlanılamadı. Bildirim ayarları kaydedilemedi.');
+        });
+    });
+    // --- YENİ EKLENEN KOD SONU ---
+
 
     refreshButton.addEventListener('click', fetchData);
     fetchData(); 
