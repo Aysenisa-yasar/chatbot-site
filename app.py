@@ -1,7 +1,7 @@
 # app.py
 # Bu dosya, YZ modelini çalıştıracak olan Python arka ucudur (Backend).
 
-import os
+import os # Ortam değişkenlerini okumak için eklendi
 import time
 import requests
 import numpy as np
@@ -21,10 +21,11 @@ CORS(app)
 # Kandilli verilerini çeken üçüncü taraf API
 KANDILLI_API = 'https://api.orhanaydogdu.com.tr/deprem/kandilli/live'
 
-# --- TWILIO BİLDİRİM SABİTLERİ (KENDİ BİLGİLERİNİZLE DEĞİŞTİRİN!) ---
-TWILIO_ACCOUNT_SID = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  
-TWILIO_AUTH_TOKEN = "your_auth_token_xxxxxxxxxxxxxxxxx" 
-TWILIO_WHATSAPP_NUMBER = "whatsapp:+1415xxxxxxx" 
+# --- TWILIO BİLDİRİM SABİTLERİ (ORTAM DEĞİŞKENLERİNDEN OKUNUR) ---
+# Twilio kimlik bilgileri ve numarası, Render ortam değişkenlerinden alınır.
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+TWILIO_WHATSAPP_NUMBER = os.environ.get("TWILIO_WHATSAPP_NUMBER")
 
 # --- KULLANICI AYARLARI (GEÇİCİ SÖZLÜK) ---
 user_alerts = {} 
@@ -36,6 +37,7 @@ last_big_earthquake = {'mag': 0, 'time': 0}
 def send_whatsapp_notification(recipient_number, body):
     """ Twilio üzerinden WhatsApp mesajı gönderir. """
     try:
+        # Client, Ortam Değişkenlerinden alınan SID ve Token ile başlatılır
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         whatsapp_number = f"whatsapp:{recipient_number}"
         
@@ -47,6 +49,8 @@ def send_whatsapp_notification(recipient_number, body):
         print(f"✅ WhatsApp Bildirimi başarıyla gönderildi. SID: {message.sid}")
     except Exception as e:
         print(f"HATA: WhatsApp mesajı gönderilemedi. Hata: {e}")
+
+# ... (haversine ve calculate_clustering_risk fonksiyonları aynı kalır)
 
 def haversine(lat1, lon1, lat2, lon2):
     """ İki nokta arasındaki mesafeyi kilometre cinsinden hesaplar. """
@@ -134,7 +138,7 @@ def get_risk_analysis():
 
 @app.route('/api/set-alert', methods=['POST'])
 def set_alert_settings():
-    """ Kullanıcının konumunu ve bildirim telefon numarasını kaydeder. """
+    """ Kullanıcının konumunu ve bildirim telefon numarasını kaydeder ve onay mesajı gönderir. """
     data = request.get_json()
     lat = data.get('lat')
     lon = data.get('lon')
@@ -148,6 +152,14 @@ def set_alert_settings():
         
     user_alerts[number] = {'lat': lat, 'lon': lon}
     print(f"Yeni WhatsApp Bildirim Ayarı Kaydedildi: {number} @ ({lat:.2f}, {lon:.2f})")
+    
+    # Başarılı kayıt sonrası onay mesajı gönderme (Frontend URL'si gerekiyorsa buraya eklenebilir)
+    confirmation_body = f"🎉 Ayşenisa YZ Deprem İzleme Sistemi'ne hoş geldiniz!\n"
+    confirmation_body += f"✅ Bildirimler, konumunuz için başarıyla etkinleştirildi.\n"
+    confirmation_body += f"🔔 Bölgenizde M ≥ 5.0 deprem olursa size anında WhatsApp ile haber vereceğiz."
+    
+    send_whatsapp_notification(number, confirmation_body)
+    
     return jsonify({"status": "success", "message": "Bildirim ayarlarınız kaydedildi."})
 
 
