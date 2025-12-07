@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YZ Destekli Türkiye Deprem İzleme Sistemi</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Türkiye Güncel Depremleri (YZ Destekli Risk Analizi)</h1>
+        
+        <div id="mapid" style="height: 400px; margin-bottom: 20px; border: 1px solid #ccc;"></div> 
+
+        <button id="refreshButton">Risk Analizini Yenile</button>
+        
+        <div id="earthquake-list">
+            <p>YZ Risk analizi verileri yükleniyor...</p>
+        </div>
+        
+        <hr style="margin-top: 30px; margin-bottom: 30px;">
+        <h2>🚨 Acil Durum WhatsApp Bildirim Ayarları (M ≥ 5.0)</h2>
+
+        <div id="notification-settings" style="padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+            <h3>1. Konumunuzu Belirleyin</h3>
+            <button id="getLocationButton" class="action-button">📍 Konumumu Otomatik Belirle</button>
+            <p id="locationStatus" style="margin-top: 10px; font-weight: bold;"></p>
+            
+            <h3>2. Bildirim Bilgilerini Girin</h3>
+            <div style="margin-top: 15px;">
+                <label for="numberInput" style="display: block; margin-bottom: 5px; font-weight: 600;">Alıcı WhatsApp Numarası (Ülke kodu ile, Örn: +90532xxxxxxx):</label>
+                <input type="tel" id="numberInput" placeholder="+905xxxxxxxxx" style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <button id="saveSettingsButton" class="save-button">
+                Ayarları Kaydet ve Bildirimi Etkinleştir
+            </button>
+            
+            <p style="margin-top: 15px; font-style: italic; color: #777; font-size: 0.9em;">
+                * Bildirimler sadece tespit edilen konuma yaklaşık 150 km yakınlıkta $M \ge 5.0$ deprem olduğunda gönderilecektir.
+            </p>
+        </div>
+        </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+       
+    <script src="script.js"></script>
+</body>
+</html>
