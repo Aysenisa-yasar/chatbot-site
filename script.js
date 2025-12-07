@@ -1,8 +1,3 @@
-Elbette, 404 hatasını çözmek için gerekli olan **mutlak URL düzeltmesini içeren** ve Backend'e doğru istek gönderen **`script.js`** dosyasının son halini aşağıda bulabilirsin.
-
-Bu kod, Vercel'deki Frontend'in, Render'daki Backend'i doğru adreste bulmasını sağlayacaktır.
-
-```javascript
 // script.js
 let mymap = null; 
 
@@ -28,9 +23,8 @@ function getRiskColor(score) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİ MUTLAK URL OLARAK TANIMLANIYOR!
-    // Bu, Vercel'den (Frontend) Render'a (Backend) doğru isteği gönderecektir.
     const RENDER_API_BASE_URL = 'https://chatbot-site-h43d.onrender.com';
-    const apiURL = `${RENDER_API_BASE_URL}/api/risk`; // Risk analizi için mutlak URL
+    const apiURL = `${RENDER_API_BASE_URL}/api/risk`; 
     
     const listContainer = document.getElementById('earthquake-list');
     const refreshButton = document.getElementById('refreshButton');
@@ -145,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // KRİTİK DÜZELTME: Mutlak URL ile POST isteği gönderiliyor.
+        // Mutlak URL ile POST isteği gönderiliyor.
         fetch(`${RENDER_API_BASE_URL}/api/set-alert`, {
             method: 'POST',
             headers: {
@@ -158,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }),
         })
         .then(response => {
-            // Hata Kontrolü: 404 hatası gelirse burada yakalanır
+            // 404/Ağ hatalarını yakalar
             if (!response.ok) { 
                  throw new Error(`Sunucu Hatası: ${response.status}. Render loglarını kontrol edin.`);
             }
@@ -182,4 +176,3 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshButton.addEventListener('click', fetchData);
     fetchData(); 
 });
-```
