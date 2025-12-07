@@ -1,10 +1,3 @@
-Gördüğünüz kod, **Twilio'nun mutlak URL düzeltmesini içeren son haliyle düzenlenmiş `script.js` dosyasıdır.**
-
-Bu kodda, Backend'e yapılan isteğin URL'si artık doğru şekilde `https://chatbot-site-h43d.onrender.com/api/set-alert` adresine yönlendirilmektedir.
-
-Lütfen bu kodu GitHub'a yükleyip Vercel'i yeniden deploy edin ve **Twilio onayını (join-dog-exact)** tamamlayın. Bu adımlardan sonra sisteminiz stabil çalışmaya başlayacaktır.
-
-```javascript
 // script.js
 let mymap = null; 
 
@@ -29,7 +22,7 @@ function getRiskColor(score) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİ BURADA TANIMLANIYOR
+    // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİNİ TANIMLAYIN!
     const RENDER_API_BASE_URL = 'https://chatbot-site-h43d.onrender.com';
     const apiURL = `${RENDER_API_BASE_URL}/api/risk`; // Risk analizi için mutlak URL
     
@@ -182,4 +175,3 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshButton.addEventListener('click', fetchData);
     fetchData(); 
 });
-```
