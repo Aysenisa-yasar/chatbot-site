@@ -1,8 +1,6 @@
-Bu, Vercel ve Render'ın farklı çalışmasından kaynaklanan ve JavaScript'te yapılan **mutlak URL** düzeltmesiyle çözülebilecek en son hatadır.
+Elbette, 404 hatasını çözmek için gerekli olan **mutlak URL düzeltmesini içeren** ve Backend'e doğru istek gönderen **`script.js`** dosyasının son halini aşağıda bulabilirsin.
 
-Gönderdiğiniz son kod (Önceki yanıttaki `script.js` kodu) zaten bu düzeltmeyi içeriyordu, ancak anlaşılan Vercel'e yüklediğiniz kodda eski, hatalı kod kalmış.
-
-İşte **`script.js`** dosyasının, **404 hatasını kesin olarak giderecek** ve kod tabanınızla uyumlu **son düzenlenmiş hali**. Bu kod, isteği Frontend (Vercel) yerine doğru Backend (Render) adresine yönlendirir.
+Bu kod, Vercel'deki Frontend'in, Render'daki Backend'i doğru adreste bulmasını sağlayacaktır.
 
 ```javascript
 // script.js
@@ -29,8 +27,8 @@ function getRiskColor(score) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİNİ MUTLAK URL OLARAK TANIMLAYIN!
-    // Bu, Vercel'den Render'a doğru isteği gönderecektir.
+    // KRİTİK DÜZELTME: RENDER API'NIN TAM ADRESİ MUTLAK URL OLARAK TANIMLANIYOR!
+    // Bu, Vercel'den (Frontend) Render'a (Backend) doğru isteği gönderecektir.
     const RENDER_API_BASE_URL = 'https://chatbot-site-h43d.onrender.com';
     const apiURL = `${RENDER_API_BASE_URL}/api/risk`; // Risk analizi için mutlak URL
     
