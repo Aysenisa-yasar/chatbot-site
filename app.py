@@ -1,12 +1,11 @@
 # app.py
 # Bu dosya, YZ modelini çalıştıracak olan Python arka ucudur (Backend).
-# Kurulum gereksinimleri: pip install flask scikit-learn numpy requests flask-cors twilio
 
 import os
 import time
 import requests
 import numpy as np
-import math 
+import math # math.pi, math.sqrt vb. fonksiyonları için eklendi
 
 from flask import Flask, jsonify, request
 from sklearn.cluster import KMeans
@@ -17,6 +16,7 @@ import requests.exceptions
 
 # --- FLASK UYGULAMASI VE AYARLARI ---
 app = Flask(__name__)
+# CORS ayarı, farklı alan adlarından (örneğin sizin Vercel veya Render'daki siteniz) gelen isteklere izin verir.
 CORS(app) 
 
 # Kandilli verilerini çeken üçüncü taraf API
@@ -27,7 +27,7 @@ TWILIO_ACCOUNT_SID = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 TWILIO_AUTH_TOKEN = "your_auth_token_xxxxxxxxxxxxxxxxx" 
 TWILIO_WHATSAPP_NUMBER = "whatsapp:+1415xxxxxxx" 
 
-# --- KULLANICI AYARLARI (GEÇİCİ VERİTABANI YERİNE SÖZLÜK) ---
+# --- KULLANICI AYARLARI (GEÇİCİ SÖZLÜK) ---
 user_alerts = {} 
 last_big_earthquake = {'mag': 0, 'time': 0} 
 
@@ -47,11 +47,12 @@ def send_whatsapp_notification(recipient_number, body):
         )
         print(f"✅ WhatsApp Bildirimi başarıyla gönderildi. SID: {message.sid}")
     except Exception as e:
-        print(f"HATA: WhatsApp mesajı gönderilemedi. Twilio ayarlarını kontrol edin. Hata: {e}")
+        print(f"HATA: WhatsApp mesajı gönderilemedi. Hata: {e}")
 
 def haversine(lat1, lon1, lat2, lon2):
     """ İki nokta arasındaki mesafeyi kilometre cinsinden hesaplar. """
     R = 6371 
+    
     lat1_rad = np.radians(lat1)
     lon1_rad = np.radians(lon1)
     lat2_rad = np.radians(lat2)
@@ -123,7 +124,7 @@ def get_risk_analysis():
         earthquake_data = response.json().get('result', [])
     except requests.exceptions.RequestException as e:
         print(f"HATA: Kandilli verisi çekilemedi: {e}")
-        return jsonify({"error": f"Veri kaynağına erişilemedi. Lütfen Kandilli API'sını kontrol edin."}), 500
+        return jsonify({"error": f"Veri kaynağına erişilemedi. {e}"}), 500
 
     risk_data = calculate_clustering_risk(earthquake_data)
     
