@@ -5,7 +5,7 @@ import os
 import time
 import requests
 import numpy as np
-import math # math.pi, math.sqrt vb. fonksiyonları için eklendi
+import math 
 
 from flask import Flask, jsonify, request
 from sklearn.cluster import KMeans
@@ -16,7 +16,6 @@ import requests.exceptions
 
 # --- FLASK UYGULAMASI VE AYARLARI ---
 app = Flask(__name__)
-# CORS ayarı, farklı alan adlarından (örneğin sizin Vercel veya Render'daki siteniz) gelen isteklere izin verir.
 CORS(app) 
 
 # Kandilli verilerini çeken üçüncü taraf API
